@@ -1,168 +1,208 @@
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+//import 'package:flutter/services.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  //var listItem = ["Kelvin", "Reamur"];
-  final myController = TextEditingController();
-  double _inputUser = 0;
-  double _kelvin = 0.0;
-  double _reamor = 0.0;
-  double _fahrenheit = 0.0;
-
-  myConvert() {
-    setState(() {
-      _inputUser = double.parse(myController.text);
-      _kelvin = (4 / 5) * _inputUser;
-      _reamor = ((9 / 5) * _inputUser) + 32;
-      _fahrenheit = _inputUser + 273;
-    });
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Conventer Suhu',
+      title: 'MyConverter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("MyConverter"),
-        ),
-        body: Container(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: TextFormField(
-                      controller: myController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        hintText: "Input Temperature in Celcius",
-                        border: InputBorder.none,
+      home: const MyHomePage(title: 'MyConverter'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final inputController = TextEditingController();
+  double inputUser = 0;
+  String newValue = "Kelvin";
+  double result = 0;
+  ValueNotifier<double> _result = ValueNotifier<double>(0);
+
+  List<String> listHistory = <String>[];
+
+  var listItem = [
+    'Kelvin',
+    'Reamur',
+  ];
+
+  external static double? tryParse(String inputController);
+
+  void dropdownOnChanged() {
+    setState(() {
+      if (inputController.text == "") {
+        inputUser = double.parse("0");
+      } else {
+        inputUser = double.parse(inputController.text);
+      }
+
+      if (newValue == "Kelvin") {
+        result = (4 / 5) * inputUser;
+        _result.value = result;
+        if (result != 0) {
+          listHistory.add(newValue.toString() + " : " + result.toString());
+        }
+      } else {
+        result = ((9 / 5) * inputUser) + 32;
+        _result.value = result;
+        if (result != 0) {
+          listHistory.add(newValue.toString() + " : " + result.toString());
+        }
+      }
+    });
+  }
+
+  void makeListHistory() {
+    listHistory.add(result.toString());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(15.0),
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: inputController,
+                          keyboardType: TextInputType.number,
+                          //inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          onChanged: (String value) {
+                            dropdownOnChanged();
+                          },
+                          decoration: const InputDecoration(
+                            hintText: "Input Temperature in Celcius",
+                            suffixText: "C",
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: FloatingActionButton(
-                      onPressed: myConvert(),
-                      tooltip: 'Convert',
-                      child: const Icon(Icons.ac_unit),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        const Text(
-                          "Kelvin",
-                          style: TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                        Text(
-                          '$_kelvin',
-                          style: const TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text(
-                          "Reamor",
-                          style: TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                        Text(
-                          '$_reamor',
-                          style: const TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text(
-                          "Fahrenheit",
-                          style: TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                        Text(
-                          '$_fahrenheit',
-                          style: const TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              /* Container(
-                padding: const EdgeInsets.all(20.0),
-                child: SizedBox(
-                  width: 250.0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      DropdownButton(
-                        items: [
-                          DropdownMenuItem(
-                              value: "Kelvin",
-                              child: Container(child: Text("Kelvin"))),
-                          DropdownMenuItem(
-                              value: "Reamur",
-                              child: Container(child: Text("Reamur"))),
-                        ],
-                        value: null,
-                        onChanged: (String changeValue) {},
-                      ),
-                      // ignore: prefer_const_constructors
-                      Container(
-                        color: Colors.white,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.all(12.0),
-                        child: const Text(
-                          'Timnas Garuda TC Di Eropa',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'open sans',
-                          ),
+                      const Expanded(
+                        flex: 1,
+                        child: Icon(
+                          Icons.ac_unit,
+                          color: Colors.blue,
+                          size: 40,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ), */
-            ],
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Center(
+                      child: SizedBox(
+                        width: 200.0,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DropdownButton(
+                              items: listItem.map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                );
+                              }).toList(),
+                              value: newValue,
+                              onChanged: (changeValue) {
+                                setState(() {
+                                  newValue = changeValue.toString();
+                                });
+                                dropdownOnChanged();
+                              },
+                            ),
+                            Container(
+                              color: Colors.black,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                result.toString() + " " + newValue.toString(),
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        child: const Text(
+                          " Riwayat Konversi",
+                          style: TextStyle(
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        child: ValueListenableBuilder(
+                          valueListenable: _result,
+                          builder: (context, value, child) {
+                            return Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 20,
+                                ),
+                                child: ListView.builder(
+                                  itemCount: listHistory.length,
+                                  itemBuilder: (context, index) {
+                                    return Text(
+                                      listHistory[index],
+                                      style: const TextStyle(fontSize: 17),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
